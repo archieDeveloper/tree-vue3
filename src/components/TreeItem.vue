@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, nextTick } from "vue";
-import type { Ref, ComputedRef } from "vue";
-
 import IconFolderOpen from "@/components/icons/IconFolderOpen.vue";
 import IconFile from "@/components/icons/IconFile.vue";
 import IconPen from "@/components/icons/IconPen.vue";
 import IconMultiply from "@/components/icons/IconMultiply.vue";
+
+import { ref, computed, nextTick } from "vue";
+import type { Ref, ComputedRef } from "vue";
 
 interface Props {
   name: string;
@@ -32,10 +32,10 @@ function setEditMode(isEditMode: boolean): void {
   isEdit.value = Boolean(isEditMode);
 }
 
-function doEdit() {
+function doEdit(): void {
   setEditMode(true);
   nextTick(() => {
-    if (inputEdit.value) {
+    if (typeof inputEdit.value?.focus === "function") {
       inputEdit.value.focus();
     }
   });
@@ -45,7 +45,7 @@ function doRemove(): void {
   emit("remove");
 }
 
-function doSave(e: Event): void {
+function doSave(): void {
   const newName = editName.value.trim();
   if (newName) {
     emit("change", {
@@ -58,12 +58,14 @@ function doSave(e: Event): void {
   setEditMode(false);
 }
 
-function change(index: number, newItem: Props): void {
+function changeTreeItem(
+  index: number,
+  changeCb: (children: Props[]) => Props[]
+) {
   if (Array.isArray(props.children)) {
     const model = props.children[index];
-    if (model) {
-      const newChildren = [...props.children];
-      newChildren[index] = newItem;
+    if (model && typeof changeCb === "function") {
+      const newChildren = changeCb([...props.children]);
       emit("change", {
         name: props.name,
         children: newChildren,
@@ -72,18 +74,18 @@ function change(index: number, newItem: Props): void {
   }
 }
 
+function change(index: number, newItem: Props): void {
+  changeTreeItem(index, (children) => {
+    children[index] = newItem;
+    return children;
+  });
+}
+
 function remove(index: number): void {
-  if (Array.isArray(props.children)) {
-    const model = props.children[index];
-    if (model) {
-      const newChildren = [...props.children];
-      newChildren.splice(index, 1);
-      emit("change", {
-        name: props.name,
-        children: newChildren,
-      });
-    }
-  }
+  changeTreeItem(index, (children) => {
+    children.splice(index, 1);
+    return children;
+  });
 }
 </script>
 

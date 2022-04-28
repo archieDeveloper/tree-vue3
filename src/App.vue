@@ -1,59 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
 import TreeItem from "@/components/TreeItem.vue";
 
-/**
- * Задача:
- *
- * Написать приложение на vue.js (версии 2 или 3) для вывода дерева
- * папок и файлов с возможностью редактирования названия и удаления
- * элементов. Для хранения состояния использовать vuex (либо
- * аналогичный инструмент).
- *
- * Начальная структура дерева:
- * - Dir 1
- * -- Dir 1-1
- * --- File 1-1-1
- * -- File 1-2
- * - Dir 2
- * -- Dir 2-1
- * -- File 2-2
- * - File 2
- *
- * Основные требования:
- * - аккуратность, чистота кода
- * - комментарии в коде для непонятных участков
- */
+import { useFilesStore } from "@/stores/files";
+import { storeToRefs } from "pinia";
 
-const treeData = ref([
-  {
-    name: "Dir 1",
-    children: [
-      {
-        name: "Dir 1-1",
-        children: [{ name: "File 1-1-1" }],
-      },
-      { name: "File 1-2" },
-    ],
-  },
-  {
-    name: "Dir 2",
-    children: [{ name: "Dir 2-1", children: [] }, { name: "File 2-2" }],
-  },
-  { name: "File 2" },
-]);
-
-const treeDataEmpty = computed((): boolean => {
-  return !(treeData.value?.length > 0);
-});
-
-function change(index: number, newItem: never) {
-  treeData.value[index] = newItem;
-}
-
-function remove(index: number) {
-  treeData.value.splice(index, 1);
-}
+const store = useFilesStore();
+const { treeData, treeDataEmpty } = storeToRefs(store);
+const { change, remove } = store;
 </script>
 
 <template>
